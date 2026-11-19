@@ -38,7 +38,7 @@ def validate_file(path: Path, root: Path = ROOT) -> list[str]:
     after = closing + 5
 
     try:
-        metadata = yaml.safe_load(content[4:closing])
+        metadata = yaml.safe_load(content[4 : closing + 1])
     except yaml.YAMLError as exc:
         return [f"{label}: invalid YAML frontmatter: {exc}"]
     if not isinstance(metadata, dict):
