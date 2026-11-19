@@ -81,3 +81,18 @@ def test_missing_required_section_is_rejected(tmp_path):
     path = write_skill(tmp_path / "example", "name: example\ndescription: valid\n", body="# Example\n")
     errors = validator.validate_file(path, root=tmp_path)
     assert any("missing required section" in error for error in errors)
+
+
+def test_block_scalar_description_at_schema_limit_is_valid(tmp_path):
+    description = "x" * 1023
+    metadata = "name: example\ndescription: |\n  " + description + "\n"
+    path = write_skill(tmp_path / "example", metadata)
+    assert validator.validate_file(path, root=tmp_path) == []
+
+
+def test_block_scalar_description_over_schema_limit_is_rejected(tmp_path):
+    description = "x" * 1024
+    metadata = "name: example\ndescription: |\n  " + description + "\n"
+    path = write_skill(tmp_path / "example", metadata)
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("metadata schema error" in error for error in errors)
