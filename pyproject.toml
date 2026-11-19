@@ -11,7 +11,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Jahid" }]
 dependencies = [
-  "PyYAML>=6.0",
+  "PyYAML>=6.0.3",
   "jsonschema>=4.21",
 ]
 
