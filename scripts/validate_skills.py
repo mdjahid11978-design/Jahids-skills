@@ -62,6 +62,30 @@ def _label(path: Path, root: Path) -> str:
         return str(path)
 
 
+def _parse_content(content: str, label: str) -> tuple[dict[str, Any] | None, str, list[str]]:
+    if not content.startswith("---\n"):
+        return None, "", [f"{label}: missing YAML frontmatter opening delimiter"]
+
+    if content.startswith("---\n---\n"):
+        raw_metadata = ""
+        body = content[8:]
+    else:
+        closing = content.find("\n---\n", 4)
+        if closing < 0:
+            return None, "", [f"{label}: missing YAML frontmatter closing delimiter"]
+        # Keep the newline before the closing delimiter. YAML block scalars use it.
+        raw_metadata = content[4 : closing + 1]
+        body = content[closing + 5 :]
+
+    try:
+        metadata = yaml.load(raw_metadata, Loader=UniqueKeyLoader)
+    except (yaml.YAMLError, ValueError, AttributeError) as exc:
+        return None, "", [f"{label}: invalid YAML frontmatter: {exc}"]
+    if not isinstance(metadata, dict):
+        return None, body, [f"{label}: frontmatter must be a YAML mapping"]
+    return metadata, body, []
+
+
 def validate_file(path: Path, root: Path = ROOT) -> list[str]:
     label = _label(path, root)
     try:
@@ -69,21 +93,10 @@ def validate_file(path: Path, root: Path = ROOT) -> list[str]:
     except (OSError, UnicodeError) as exc:
         return [f"{label}: cannot read UTF-8 file: {exc}"]
 
-    if not content.startswith("---\n"):
-        return [f"{label}: missing YAML frontmatter opening delimiter"]
-    closing = content.find("\n---\n", 4)
-    if closing < 0:
-        return [f"{label}: missing YAML frontmatter closing delimiter"]
-    body = content[closing + 5 :]
+    metadata, body, errors = _parse_content(content, label)
+    if errors or metadata is None:
+        return errors
 
-    try:
-        metadata = yaml.load(content[4:closing], Loader=UniqueKeyLoader)
-    except yaml.YAMLError as exc:
-        return [f"{label}: invalid YAML frontmatter: {exc}"]
-    if not isinstance(metadata, dict):
-        return [f"{label}: frontmatter must be a YAML mapping"]
-
-    errors: list[str] = []
     for issue in sorted(VALIDATOR.iter_errors(metadata), key=lambda e: list(map(str, e.absolute_path))):
         location = ".".join(str(part) for part in issue.absolute_path)
         suffix = f" at {location}" if location else ""
@@ -125,23 +138,22 @@ def validate_tree(skills_dir: Path = SKILLS) -> tuple[list[str], int]:
             errors.append(f"{directory}: missing required SKILL.md{hint}")
             continue
         checked += 1
-        file_errors = validate_file(entrypoint, root=skills_dir.parent)
-        errors.extend(file_errors)
+        errors.extend(validate_file(entrypoint, root=skills_dir.parent))
         try:
-            text = entrypoint.read_text(encoding="utf-8")
-            closing = text.find("\n---\n", 4)
-            if text.startswith("---\n") and closing >= 0:
-                metadata = yaml.load(text[4:closing], Loader=UniqueKeyLoader)
-                if isinstance(metadata, dict) and isinstance(metadata.get("name"), str):
-                    key = metadata["name"].casefold()
+            content = entrypoint.read_text(encoding="utf-8")
+            metadata, _, parse_errors = _parse_content(content, str(entrypoint))
+            if not parse_errors and metadata is not None:
+                name = metadata.get("name")
+                if isinstance(name, str):
+                    key = name.casefold()
                     if key in seen_names:
                         errors.append(
-                            f"{entrypoint}: duplicate skill name {metadata['name']!r}; "
+                            f"{entrypoint}: duplicate skill name {name!r}; "
                             f"also used by {seen_names[key]}"
                         )
                     else:
                         seen_names[key] = str(entrypoint)
-        except (OSError, UnicodeError, yaml.YAMLError):
+        except (OSError, UnicodeError):
             pass
     return errors, checked
 
