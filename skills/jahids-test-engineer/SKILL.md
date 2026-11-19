@@ -21,7 +21,8 @@ Defining acceptance tests, investigating regressions, validating a release, or t
 5. Never use production credentials or destructive production data.
 6. Record exact commands, environment, versions, and test output.
 7. Re-run focused tests after fixes, then the full relevant suite.
-8. Report flaky tests and missing coverage instead of hiding them.
+8. Treat skipped, filtered, or unexecuted required tests as BLOCKED or NOT_TESTED, never PASS.
+9. Report flaky tests and missing coverage instead of hiding them.
 
 ## Output
 A test plan, test cases, execution evidence, defects, coverage gaps, and PASS/FAIL/BLOCKED/NOT_TESTED status.
