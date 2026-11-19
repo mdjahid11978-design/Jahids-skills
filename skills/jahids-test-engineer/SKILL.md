@@ -14,7 +14,7 @@ Defining acceptance tests, investigating regressions, validating a release, or t
 - Safe test data and available test tools
 
 ## Procedure
-1. Convert each acceptance criterion into an observable test.
+1. Convert every acceptance criterion into an observable test and map it to one or more required checks.
 2. Cover normal, boundary, malformed, unauthorized, timeout, retry, and recovery cases.
 3. Separate unit, contract, integration, end-to-end, and security tests.
 4. Use deterministic fixtures and isolated test resources.
@@ -27,7 +27,7 @@ Defining acceptance tests, investigating regressions, validating a release, or t
 A test plan, test cases, execution evidence, defects, coverage gaps, and PASS/FAIL/BLOCKED/NOT_TESTED status.
 
 ## Verification
-A PASS requires a successful exit status and captured output from the relevant test command.
+A PASS requires complete acceptance-criterion coverage, successful execution of every required test, no unexplained skips, and captured output from the exact commit.
 
 ## Authority boundary
-Testing does not authorize production writes, external notifications, or deployment.
+The JAHIDS Governor controls test scope and permissions. Test execution or a passing result does not grant authority for production writes, external notifications, or deployment.
