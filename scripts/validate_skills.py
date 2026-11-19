@@ -1,53 +1,170 @@
 #!/usr/bin/env python3
-"""Validate JAHIDS skill directories and required frontmatter."""
+"""Validate JAHIDS.AI skill directories, YAML metadata, and required sections."""
+from __future__ import annotations
+
+import json
 from pathlib import Path
-import re
 import sys
+from typing import Any
+
+import jsonschema
+import yaml
+from yaml.constructor import ConstructorError
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "skills"
-REQUIRED = ("name", "description")
-NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SCHEMA_PATH = ROOT / "schemas" / "skill.schema.json"
+SCHEMA: dict[str, Any] = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+jsonschema.Draft202012Validator.check_schema(SCHEMA)
+VALIDATOR = jsonschema.Draft202012Validator(SCHEMA)
+REQUIRED_SECTIONS = (
+    "## Use when",
+    "## Procedure",
+    "## Output",
+    "## Authority boundary",
+)
 
 
-def validate_file(path: Path) -> list[str]:
-    errors: list[str] = []
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
-        return [f"{path.relative_to(ROOT)}: missing YAML frontmatter"]
-    end = text.find("\n---\n", 4)
-    if end < 0:
-        return [f"{path.relative_to(ROOT)}: unterminated YAML frontmatter"]
-    header = text[4:end]
-    fields: dict[str, str] = {}
-    for line in header.splitlines():
-        if ":" not in line or line.lstrip().startswith("#"):
-            continue
-        key, value = line.split(":", 1)
-        fields[key.strip()] = value.strip().strip('"\'')
-    for key in REQUIRED:
-        if not fields.get(key):
-            errors.append(f"{path.relative_to(ROOT)}: missing {key}")
-    name = fields.get("name", "")
-    if name and not NAME_RE.fullmatch(name):
-        errors.append(f"{path.relative_to(ROOT)}: invalid skill name {name!r}")
-    if path.parent.name != name:
-        errors.append(f"{path.relative_to(ROOT)}: directory must match name {name!r}")
-    if not text[end + 5:].strip():
-        errors.append(f"{path.relative_to(ROOT)}: skill body is empty")
+class UniqueKeyLoader(yaml.SafeLoader):
+    """Safe YAML loader that rejects duplicate mapping keys."""
+
+
+def _construct_unique_mapping(loader: UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False):
+    loader.flatten_mapping(node)
+    mapping: dict[Any, Any] = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            duplicate = key in mapping
+        except TypeError as exc:
+            raise ConstructorError(
+                "while constructing a mapping", node.start_mark,
+                "found an unhashable mapping key", key_node.start_mark,
+            ) from exc
+        if duplicate:
+            raise ConstructorError(
+                "while constructing a mapping", node.start_mark,
+                f"found duplicate key {key!r}", key_node.start_mark,
+            )
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+UniqueKeyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_unique_mapping
+)
+
+
+def _label(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def _parse_content(content: str, label: str) -> tuple[dict[str, Any] | None, str, list[str]]:
+    if not content.startswith("---\n"):
+        return None, "", [f"{label}: missing YAML frontmatter opening delimiter"]
+
+    if content.startswith("---\n---\n"):
+        raw_metadata = ""
+        body = content[8:]
+    else:
+        closing = content.find("\n---\n", 4)
+        if closing < 0:
+            return None, "", [f"{label}: missing YAML frontmatter closing delimiter"]
+        # Keep the newline before the closing delimiter. YAML block scalars use it.
+        raw_metadata = content[4 : closing + 1]
+        body = content[closing + 5 :]
+
+    try:
+        metadata = yaml.load(raw_metadata, Loader=UniqueKeyLoader)
+    except (yaml.YAMLError, ValueError, AttributeError) as exc:
+        return None, "", [f"{label}: invalid YAML frontmatter: {exc}"]
+    if not isinstance(metadata, dict):
+        return None, body, [f"{label}: frontmatter must be a YAML mapping"]
+    return metadata, body, []
+
+
+def validate_file(path: Path, root: Path = ROOT) -> list[str]:
+    label = _label(path, root)
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return [f"{label}: cannot read UTF-8 file: {exc}"]
+
+    metadata, body, errors = _parse_content(content, label)
+    if errors or metadata is None:
+        return errors
+
+    for issue in sorted(VALIDATOR.iter_errors(metadata), key=lambda e: list(map(str, e.absolute_path))):
+        location = ".".join(str(part) for part in issue.absolute_path)
+        suffix = f" at {location}" if location else ""
+        errors.append(f"{label}: metadata schema error{suffix}: {issue.message}")
+
+    name = metadata.get("name")
+    if isinstance(name, str) and path.parent.name != name:
+        errors.append(f"{label}: directory must match metadata name {name!r}")
+    if not body.strip():
+        errors.append(f"{label}: skill body is empty")
+    else:
+        for heading in REQUIRED_SECTIONS:
+            if heading not in body.splitlines():
+                errors.append(f"{label}: missing required section {heading!r}")
+        if not body.lstrip().startswith("# "):
+            errors.append(f"{label}: skill body must start with a level-one Markdown title")
     return errors
 
 
+def validate_tree(skills_dir: Path = SKILLS) -> tuple[list[str], int]:
+    if not skills_dir.is_dir():
+        return [f"{skills_dir}: skills directory does not exist"], 0
+
+    directories = sorted(path for path in skills_dir.iterdir() if path.is_dir())
+    if not directories:
+        return [f"{skills_dir}: no skill directories found"], 0
+
+    errors: list[str] = []
+    checked = 0
+    seen_names: dict[str, str] = {}
+    for directory in directories:
+        if directory.is_symlink():
+            errors.append(f"{directory}: skill directories cannot be symbolic links")
+            continue
+        entrypoint = directory / "SKILL.md"
+        if not entrypoint.is_file():
+            alternatives = [p.name for p in directory.iterdir() if p.is_file()]
+            hint = f"; found files: {', '.join(alternatives)}" if alternatives else ""
+            errors.append(f"{directory}: missing required SKILL.md{hint}")
+            continue
+        checked += 1
+        errors.extend(validate_file(entrypoint, root=skills_dir.parent))
+        try:
+            content = entrypoint.read_text(encoding="utf-8")
+            metadata, _, parse_errors = _parse_content(content, str(entrypoint))
+            if not parse_errors and metadata is not None:
+                name = metadata.get("name")
+                if isinstance(name, str):
+                    key = name.casefold()
+                    if key in seen_names:
+                        errors.append(
+                            f"{entrypoint}: duplicate skill name {name!r}; "
+                            f"also used by {seen_names[key]}"
+                        )
+                    else:
+                        seen_names[key] = str(entrypoint)
+        except (OSError, UnicodeError):
+            pass
+    return errors, checked
+
+
 def main() -> int:
-    paths = sorted(SKILLS.glob("*/SKILL.md"))
-    if not paths:
-        print("FAIL: no skills found")
-        return 1
-    errors = [error for path in paths for error in validate_file(path)]
+    errors, checked = validate_tree()
     if errors:
         print("\n".join(errors))
+        print(f"FAIL: {len(errors)} issue(s); {checked} skill file(s) checked")
         return 1
-    print(f"PASS: validated {len(paths)} skills")
+    print(f"PASS: validated {checked} skills against YAML, JSON Schema, and content rules")
     return 0
 
 
