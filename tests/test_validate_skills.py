@@ -17,7 +17,18 @@ def write_skill(folder: Path, metadata: str, body: str = "# Skill\n\n## Use when
 
 def test_repository_skills_are_valid():
     errors, checked = validator.validate_tree()
-    assert checked >= 20
+    expected = {
+        'jahids-agent-builder', 'jahids-agent-group-coordinator', 'jahids-api-architect',
+        'jahids-data-privacy-steward', 'jahids-documentation-curator', 'jahids-evidence-auditor',
+        'jahids-governor-policy', 'jahids-incident-responder', 'jahids-integration-engineer',
+        'jahids-mcp-integration', 'jahids-memory-manager', 'jahids-mission-planner',
+        'jahids-model-operations', 'jahids-observability-engineer', 'jahids-recovery-manager',
+        'jahids-release-manager', 'jahids-repository-maintainer', 'jahids-security-review',
+        'jahids-tenant-isolation-auditor', 'jahids-test-engineer', 'jahids-workflow-orchestrator',
+    }
+    directories = {path.name for path in validator.SKILLS.iterdir() if path.is_dir()}
+    assert directories == expected
+    assert checked == len(expected)
     assert errors == []
 
 
@@ -96,3 +107,29 @@ def test_block_scalar_description_over_schema_limit_is_rejected(tmp_path):
     path = write_skill(tmp_path / "example", metadata)
     errors = validator.validate_file(path, root=tmp_path)
     assert any("metadata schema error" in error for error in errors)
+
+
+def test_empty_frontmatter_is_reported_as_non_mapping(tmp_path):
+    folder = tmp_path / "example"
+    folder.mkdir()
+    path = folder / "SKILL.md"
+    path.write_text("---\n---\n# Example\n", encoding="utf-8")
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("frontmatter must be a YAML mapping" in error for error in errors)
+
+
+def test_invalid_implicit_date_is_reported_and_does_not_abort(tmp_path):
+    path = write_skill(tmp_path / "invalid-date", "name: invalid-date\ndescription: 2026-02-30\n")
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("invalid YAML frontmatter" in error for error in errors)
+
+
+def test_quoted_date_description_is_valid(tmp_path):
+    path = write_skill(tmp_path / "quoted-date", 'name: quoted-date\ndescription: "2026-02-30"\n')
+    assert validator.validate_file(path, root=tmp_path) == []
+
+
+def test_invalid_explicit_timestamp_is_reported(tmp_path):
+    path = write_skill(tmp_path / "bad-timestamp", "name: bad-timestamp\ndescription: !!timestamp today\n")
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("invalid YAML frontmatter" in error for error in errors)
