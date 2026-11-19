@@ -19,7 +19,7 @@ Reviewing code, infrastructure, agent manifests, MCP tools, CI workflows, or pro
 3. Check input validation, output handling, injection risks, dependency exposure, and logging.
 4. Review tool permissions and classify read, write, destructive, and external actions.
 5. Check approval binding, replay protection, rate limits, budgets, and kill-switch behavior.
-6. Test failure paths and adversarial inputs without touching production data.
+6. Test failure paths and adversarial inputs in an authorized non-production environment with synthetic data; any production testing requires separate explicit Governor approval and a documented safety plan.
 7. Rank findings by impact and likelihood; include exact evidence and remediation.
 8. Re-test fixes and record any residual risk.
 
