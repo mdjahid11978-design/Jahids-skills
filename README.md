@@ -6,7 +6,7 @@ An independent, MIT-licensed skills library for the JAHIDS.AI Sovereign AI Platf
 
 ## Library
 
-<escape>**21 original skills** cover mission planning, Governor policy, agent design and groups, MCP, integrations, API architecture, memory, privacy, tenant isolation, security, testing, evidence, workflows, model operations, observability, incident response, repository maintenance, documentation, recovery, and releases.</escape>
+**21 original skills** cover mission planning, Governor policy, agent design and groups, MCP, integrations, API architecture, memory, privacy, tenant isolation, security, testing, evidence, workflows, model operations, observability, incident response, repository maintenance, documentation, recovery, and releases.
 
 - [Browse the human-readable catalog](catalog/README.md)
 - [Machine-readable catalog](catalog/skills.json)
