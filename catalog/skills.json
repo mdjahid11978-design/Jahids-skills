@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "jahids-agent-builder",
+      "description": "Specify bounded JAHIDS agents with clear responsibilities, tools, inputs, outputs, limits, and verification.",
+      "path": "skills/jahids-agent-builder/SKILL.md"
+    },
+    {
+      "name": "jahids-agent-group-coordinator",
+      "description": "Coordinate bounded JAHIDS.AI agent groups with explicit roles, task dependencies, shared context, budgets, handoffs, and supervision.",
+      "path": "skills/jahids-agent-group-coordinator/SKILL.md"
+    },
+    {
+      "name": "jahids-api-architect",
+      "description": "Design versioned JAHIDS.AI APIs with stable contracts, authentication, tenant isolation, rate limits, and compatibility rules.",
+      "path": "skills/jahids-api-architect/SKILL.md"
+    },
+    {
+      "name": "jahids-data-privacy-steward",
+      "description": "Apply data minimization, classification, retention, access, and privacy review to JAHIDS.AI agent and mission data flows.",
+      "path": "skills/jahids-data-privacy-steward/SKILL.md"
+    },
+    {
+      "name": "jahids-documentation-curator",
+      "description": "Maintain accurate JAHIDS.AI technical documentation, skill references, API guides, examples, and change history.",
+      "path": "skills/jahids-documentation-curator/SKILL.md"
+    },
+    {
+      "name": "jahids-evidence-auditor",
+      "description": "Check whether mission claims and deliverables are supported by reproducible evidence and explicit verification results.",
+      "path": "skills/jahids-evidence-auditor/SKILL.md"
+    },
+    {
+      "name": "jahids-governor-policy",
+      "description": "Evaluate proposed agent actions against explicit scope, identity, permissions, risk, budget, and approval requirements.",
+      "path": "skills/jahids-governor-policy/SKILL.md"
+    },
+    {
+      "name": "jahids-incident-responder",
+      "description": "Coordinate JAHIDS.AI incident triage, containment, evidence preservation, communication, and recovery under approved authority.",
+      "path": "skills/jahids-incident-responder/SKILL.md"
+    },
+    {
+      "name": "jahids-integration-engineer",
+      "description": "Build and maintain safe JAHIDS.AI integrations with external services using scoped credentials, contracts, retries, and audit evidence.",
+      "path": "skills/jahids-integration-engineer/SKILL.md"
+    },
+    {
+      "name": "jahids-mcp-integration",
+      "description": "Design and review Model Context Protocol tool integrations with scoped access, validation, approvals, and auditable execution.",
+      "path": "skills/jahids-mcp-integration/SKILL.md"
+    },
+    {
+      "name": "jahids-memory-manager",
+      "description": "Organize mission and agent memory with explicit scope, provenance, retention, access controls, and deletion rules.",
+      "path": "skills/jahids-memory-manager/SKILL.md"
+    },
+    {
+      "name": "jahids-mission-planner",
+      "description": "Turn a user goal into a bounded, verifiable mission plan with tasks, dependencies, budgets, risks, and approval points.",
+      "path": "skills/jahids-mission-planner/SKILL.md"
+    },
+    {
+      "name": "jahids-model-operations",
+      "description": "Manage JAHIDS.AI model lifecycle, evaluation, deployment readiness, versioning, rollback, and inference budgets.",
+      "path": "skills/jahids-model-operations/SKILL.md"
+    },
+    {
+      "name": "jahids-observability-engineer",
+      "description": "Define JAHIDS.AI logs, metrics, traces, alerts, and service-level indicators with privacy and tenant boundaries.",
+      "path": "skills/jahids-observability-engineer/SKILL.md"
+    },
+    {
+      "name": "jahids-recovery-manager",
+      "description": "Plan safe recovery from failed or partial agent tasks using checkpoints, idempotency, rollback, and evidence preservation.",
+      "path": "skills/jahids-recovery-manager/SKILL.md"
+    },
+    {
+      "name": "jahids-release-manager",
+      "description": "Prepare controlled JAHIDS.AI releases with versioning, change review, CI evidence, release notes, and rollback planning.",
+      "path": "skills/jahids-release-manager/SKILL.md"
+    },
+    {
+      "name": "jahids-repository-maintainer",
+      "description": "Maintain JAHIDS.AI repositories through safe inspection, scoped branches, quality checks, documentation, and reviewable pull requests.",
+      "path": "skills/jahids-repository-maintainer/SKILL.md"
+    },
+    {
+      "name": "jahids-security-review",
+      "description": "Review JAHIDS.AI code, agent designs, integrations, and workflows for security risks, trust-boundary failures, and unsafe permissions.",
+      "path": "skills/jahids-security-review/SKILL.md"
+    },
+    {
+      "name": "jahids-tenant-isolation-auditor",
+      "description": "Audit JAHIDS.AI tenant and workspace boundaries across APIs, databases, memory, queues, files, logs, and agent execution.",
+      "path": "skills/jahids-tenant-isolation-auditor/SKILL.md"
+    },
+    {
+      "name": "jahids-test-engineer",
+      "description": "Design and run layered tests for JAHIDS.AI skills, agents, APIs, integrations, and mission workflows.",
+      "path": "skills/jahids-test-engineer/SKILL.md"
+    },
+    {
+      "name": "jahids-workflow-orchestrator",
+      "description": "Build reliable JAHIDS.AI workflows with explicit states, dependencies, retries, checkpoints, idempotency, and approval gates.",
+      "path": "skills/jahids-workflow-orchestrator/SKILL.md"
+    }
+  ]
+}
