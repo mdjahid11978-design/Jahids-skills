@@ -1,22 +1,19 @@
 # JAHIDS.AI Skills
 
-An independent, open skills library for the JAHIDS.AI Sovereign AI Platform.
+An independent skills library for the JAHIDS.AI Sovereign AI Platform.
 
 **Built by Jahid.** Computation proposes; it is not authority.
 
-## Purpose
+## What this repository contains
 
-JAHIDS.AI Skills provides reusable, documented capabilities for agents and assistants. Skills describe procedures and constraints; the JAHIDS Governor remains the authority for permissions, approvals, budgets, and execution.
+- Portable agent and assistant skills under `skills/`
+- YAML frontmatter validated against `schemas/skill.schema.json`
+- A Python validator that checks every skill directory and entrypoint
+- Automated tests and multi-version GitHub Actions CI
+- Tag-triggered package and GitHub Release automation
+- Release and contribution guidance
 
-## Architecture
-
-- `skills/`: portable skill definitions with clear inputs, outputs, procedures, and safety boundaries.
-- `schemas/`: machine-readable skill metadata schema.
-- `scripts/`: local validation tools.
-- `tests/`: automated validation tests.
-- `.github/workflows/`: continuous integration.
-
-## Core rules
+## Core governance rules
 
 1. Inspect before changing files or systems.
 2. Preserve existing work and use a feature branch.
@@ -24,25 +21,32 @@ JAHIDS.AI Skills provides reusable, documented capabilities for agents and assis
 4. Never place credentials, tokens, or private keys in skills or examples.
 5. Require explicit authorization for consequential external actions.
 6. Record evidence and distinguish PASS, FAIL, BLOCKED, and NOT_TESTED.
-7. Skills may propose actions; the Governor authorizes execution.
+7. Skills may propose actions; the JAHIDS Governor authorizes execution.
 
 ## Skill format
 
-Each skill lives in `skills/<skill-id>/SKILL.md` and begins with YAML frontmatter containing `name` and `description`. The body documents when to use it, required inputs, procedure, outputs, permissions, and verification.
+Each skill lives in `skills/<skill-id>/SKILL.md`. Every file starts with YAML frontmatter containing exactly two required string fields: `name` and `description`. The skill directory must match `name`. The body should document purpose, inputs, procedure, outputs, verification, and authority boundaries.
 
-## Validate
+## Local setup and validation
 
 Requires Python 3.11 or later.
 
 ```powershell
 python -m pip install -e ".[dev]"
-python -m pytest
 python scripts/validate_skills.py
+python -m pytest
+python -m build
 ```
+
+## Releases
+
+Push a version tag such as `v0.2.0` after review and approval. The release workflow reruns validation, builds source and wheel distributions, and creates a GitHub Release with generated notes.
+
+See [docs/RELEASE.md](docs/RELEASE.md).
 
 ## Autonomy boundary
 
-This repository defines reusable instructions, not an execution authority. Runtime permissions, tenant isolation, approvals, policy evaluation, and audit controls belong to the JAHIDS Control Plane and Governor.
+This repository defines reusable instructions, not an execution authority. Runtime permissions, tenant isolation, approvals, policy evaluation, and audit controls belong to the JAHIDS Control Plane and Governor. No skill can grant itself permissions, approve its own actions, or bypass the Governor.
 
 ## License
 
