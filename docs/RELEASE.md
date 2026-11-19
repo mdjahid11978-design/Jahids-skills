@@ -27,9 +27,9 @@ The release workflow independently checks that the tagged commit is an ancestor 
 
 Configure these repository controls before enabling public releases:
 
-1. **Environment:** create a GitHub environment named `release` and add required reviewers. The publish job waits for this environment gate.
-2. **Tag ruleset:** protect tags matching `v*`; restrict tag creation to the release owner/maintainers.
-3. **Main branch:** require pull requests, required CI checks, and review before merging.
+1. **Environment:** create a GitHub environment named `release`, add required reviewers, and prevent self-review where available. The publish job waits for this environment gate.
+2. **Tag ruleset:** target `refs/tags/v*`, restrict tag creation to release maintainers, and block tag updates and deletion.
+3. **Main branch:** require pull requests, at least one approval, and the `Python 3.11` and `Python 3.12` validation checks. Block force pushes and branch deletion.
 
 The workflow checks that a release commit is on `main`; repository rulesets and environment reviewers provide the administrative approval gate.
 
