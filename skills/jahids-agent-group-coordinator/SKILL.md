@@ -20,8 +20,8 @@ A mission needs multiple agents or assistants working on distinct but coordinate
 4. Set shared and per-agent token, time, cost, concurrency, and retry budgets.
 5. Define shared context with provenance; avoid uncontrolled shared writable memory.
 6. Track task state, blockers, evidence, and dependency completion.
-7. Detect duplicate work, conflicting outputs, deadlocks, and budget exhaustion.
-8. Escalate scope changes and consequential actions to the Governor.
+7. Detect duplicate work, conflicting outputs, deadlocks, and budget exhaustion; pause affected tasks immediately when any budget or limit is reached.
+8. Escalate scope changes, exhausted budgets, and consequential actions to the Governor before resuming.
 9. Reconcile outputs against mission acceptance criteria before completion.
 
 ## Output
