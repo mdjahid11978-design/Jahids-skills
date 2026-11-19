@@ -133,3 +133,11 @@ def test_invalid_explicit_timestamp_is_reported(tmp_path):
     path = write_skill(tmp_path / "bad-timestamp", "name: bad-timestamp\ndescription: !!timestamp today\n")
     errors = validator.validate_file(path, root=tmp_path)
     assert any("invalid YAML frontmatter" in error for error in errors)
+
+
+def test_invalid_timestamp_does_not_abort_tree_validation(tmp_path):
+    write_skill(tmp_path / "invalid-date", "name: invalid-date\ndescription: 2026-02-30\n")
+    write_skill(tmp_path / "valid", "name: valid\ndescription: A valid skill\n")
+    errors, checked = validator.validate_tree(tmp_path)
+    assert checked == 2
+    assert any("invalid YAML frontmatter" in error for error in errors)
