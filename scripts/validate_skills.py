@@ -25,29 +25,26 @@ def _label(path: Path, root: Path) -> str:
 
 def validate_file(path: Path, root: Path = ROOT) -> list[str]:
     label = _label(path, root)
-    errors: list[str] = []
     try:
         content = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         return [f"{label}: cannot read UTF-8 file: {exc}"]
 
-    if not content.startswith("---\\n"):
+    if not content.startswith("---\n"):
         return [f"{label}: missing YAML frontmatter opening delimiter"]
-    closing = content.find("\\n---", 4)
+    closing = content.find("\n---\n", 4)
     if closing < 0:
         return [f"{label}: missing YAML frontmatter closing delimiter"]
-    after = closing + 4
-    if after < len(content) and content[after] not in "\\r\\n":
-        return [f"{label}: closing frontmatter delimiter must be on its own line"]
+    after = closing + 5
 
-    raw_metadata = content[4:closing]
     try:
-        metadata = yaml.safe_load(raw_metadata)
+        metadata = yaml.safe_load(content[4:closing])
     except yaml.YAMLError as exc:
         return [f"{label}: invalid YAML frontmatter: {exc}"]
     if not isinstance(metadata, dict):
         return [f"{label}: frontmatter must be a YAML mapping"]
 
+    errors: list[str] = []
     try:
         jsonschema.validate(instance=metadata, schema=SCHEMA)
     except jsonschema.ValidationError as exc:
@@ -58,21 +55,19 @@ def validate_file(path: Path, root: Path = ROOT) -> list[str]:
     name = metadata.get("name")
     if isinstance(name, str) and path.parent.name != name:
         errors.append(f"{label}: directory must match metadata name {name!r}")
-    body = content[after:].strip()
-    if not body:
+    if not content[after:].strip():
         errors.append(f"{label}: skill body is empty")
     return errors
 
 
 def validate_tree(skills_dir: Path = SKILLS) -> tuple[list[str], int]:
-    errors: list[str] = []
     if not skills_dir.is_dir():
         return [f"{skills_dir}: skills directory does not exist"], 0
-
     directories = sorted(path for path in skills_dir.iterdir() if path.is_dir())
     if not directories:
         return [f"{skills_dir}: no skill directories found"], 0
 
+    errors: list[str] = []
     checked = 0
     for directory in directories:
         entrypoint = directory / "SKILL.md"
@@ -89,7 +84,7 @@ def validate_tree(skills_dir: Path = SKILLS) -> tuple[list[str], int]:
 def main() -> int:
     errors, checked = validate_tree()
     if errors:
-        print("\\n".join(errors))
+        print("\n".join(errors))
         print(f"FAIL: {len(errors)} issue(s); {checked} skill file(s) checked")
         return 1
     print(f"PASS: validated {checked} skills against the YAML and JSON schemas")
