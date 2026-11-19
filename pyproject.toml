@@ -1,17 +1,25 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "jahids-skills"
-version = "0.1.0"
+version = "0.2.0"
 description = "Independent skill library and validator for the JAHIDS.AI platform"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Jahid" }]
+dependencies = [
+  "PyYAML>=6.0",
+  "jsonschema>=4.21",
+]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = [
+  "pytest>=8.0",
+  "build>=1.2",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-ra"
