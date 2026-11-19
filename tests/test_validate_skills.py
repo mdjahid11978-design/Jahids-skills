@@ -8,7 +8,7 @@ validator = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(validator)
 
 
-def write_skill(folder: Path, metadata: str, body: str = "# Skill\n") -> Path:
+def write_skill(folder: Path, metadata: str, body: str = "# Skill\n\n## Use when\nx\n\n## Procedure\nx\n\n## Output\nx\n\n## Authority boundary\nx\n") -> Path:
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "SKILL.md"
     path.write_text(f"---\n{metadata}---\n{body}", encoding="utf-8")
@@ -17,7 +17,7 @@ def write_skill(folder: Path, metadata: str, body: str = "# Skill\n") -> Path:
 
 def test_repository_skills_are_valid():
     errors, checked = validator.validate_tree()
-    assert checked >= 7
+    assert checked >= 20
     assert errors == []
 
 
@@ -32,10 +32,16 @@ def test_malformed_yaml_is_rejected(tmp_path):
     assert any("invalid YAML" in error for error in errors)
 
 
+def test_duplicate_yaml_keys_are_rejected(tmp_path):
+    path = write_skill(tmp_path / "example", "name: example\ndescription: first\ndescription: second\n")
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("duplicate key" in error for error in errors)
+
+
 def test_non_string_metadata_is_rejected(tmp_path):
     path = write_skill(tmp_path / "example", "name: example\ndescription: [not, a, string]\n")
     errors = validator.validate_file(path, root=tmp_path)
-    assert any("schema error" in error for error in errors)
+    assert any("metadata schema error" in error for error in errors)
 
 
 def test_unknown_metadata_is_rejected(tmp_path):
@@ -48,13 +54,13 @@ def test_description_length_is_enforced(tmp_path):
     description = "x" * 1025
     path = write_skill(tmp_path / "example", f"name: example\ndescription: {description}\n")
     errors = validator.validate_file(path, root=tmp_path)
-    assert any("schema error" in error for error in errors)
+    assert any("metadata schema error" in error for error in errors)
 
 
 def test_invalid_name_is_rejected(tmp_path):
     path = write_skill(tmp_path / "Bad_Name", "name: Bad_Name\ndescription: Invalid test\n")
     errors = validator.validate_file(path, root=tmp_path)
-    assert any("schema error" in error or "directory must match" in error for error in errors)
+    assert any("metadata schema error" in error or "directory must match" in error for error in errors)
 
 
 def test_missing_entrypoint_is_rejected(tmp_path):
@@ -69,3 +75,9 @@ def test_empty_tree_is_rejected(tmp_path):
     errors, checked = validator.validate_tree(tmp_path)
     assert checked == 0
     assert errors
+
+
+def test_missing_required_section_is_rejected(tmp_path):
+    path = write_skill(tmp_path / "example", "name: example\ndescription: valid\n", body="# Example\n")
+    errors = validator.validate_file(path, root=tmp_path)
+    assert any("missing required section" in error for error in errors)
