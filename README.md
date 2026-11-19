@@ -45,6 +45,10 @@ To regenerate the catalog after changing skills:
 python scripts/build_catalog.py
 \`\`\`
 
+## Distribution format
+
+This repository publishes source archives only. It is a skills library, not an installable Python runtime wheel. The editable install command above installs contributor tooling and dependencies for validation.
+
 ## Release
 
 Update the version in \`pyproject.toml\`, merge the approved change, then create and push the matching tag. The release workflow checks that the tag matches the project version, reruns validation and tests, audits dependencies, builds a source archive, and creates a GitHub Release.
