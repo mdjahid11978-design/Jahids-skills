@@ -35,12 +35,12 @@ Requires Python 3.11 or later.
 python -m pip install -e ".[dev]"
 python scripts/validate_skills.py
 python -m pytest
-python -m build
+python -m build --sdist
 ```
 
 ## Releases
 
-Push a version tag such as `v0.2.0` after review and approval. The release workflow reruns validation, builds source and wheel distributions, and creates a GitHub Release with generated notes.
+Push a version tag such as `v0.2.0` after review and approval. The release workflow reruns validation, builds a source distribution archive, and creates a GitHub Release with generated notes.
 
 See [docs/RELEASE.md](docs/RELEASE.md).
 
