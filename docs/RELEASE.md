@@ -21,7 +21,7 @@ git tag v0.2.0
 git push origin v0.2.0
 ```
 
-The `Build and publish release` workflow validates the skills, runs tests, builds source and wheel distributions, and creates a GitHub Release with generated notes.
+The `Build and publish release` workflow validates the skills, runs tests, builds a source distribution archive, and creates a GitHub Release with generated notes.
 
 ## Recovery
 
