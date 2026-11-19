@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jahids-skills"
 version = "0.2.0"
-description = "Independent skill library and validator for the JAHIDS.AI platform"
+description = "Source distribution of the JAHIDS.AI skill library and validation tooling"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
