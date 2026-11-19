@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jahids.ai/schemas/skill.schema.json",
+  "title": "JAHIDS Skill Metadata",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 64},
+    "description": {"type": "string", "minLength": 1, "maxLength": 1024}
+  },
+  "additionalProperties": false
+}
